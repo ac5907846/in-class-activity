@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Portfolio Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-2: #fbfcff;
+      --text: #172033;
+      --muted: #6b7280;
+      --border: #e4e8f0;
+      --primary: #2563eb;
+      --primary-soft: rgba(37, 99, 235, 0.12);
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 32rem),
+        linear-gradient(180deg, #fbfcff 0%, var(--bg) 48%, #eef2f9 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      margin-bottom: 12px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 0 5px rgba(5, 150, 105, 0.12);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.04;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      min-width: 280px;
+    }
+
+    .control {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--text);
+      padding: 11px 13px;
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+      min-width: 160px;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .control:focus {
+      border-color: rgba(37, 99, 235, 0.55);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .status-bar {
+      margin-bottom: 18px;
+      padding: 13px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .status-bar strong {
+      color: var(--text);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .kpi {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+      padding: 18px;
+      min-height: 128px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      right: -62px;
+      top: -52px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .kpi .value {
+      font-size: clamp(24px, 2.8vw, 34px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kpi .note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .card.wide {
+      grid-column: span 8;
+    }
+
+    .card.mid {
+      grid-column: span 6;
+    }
+
+    .card.narrow {
+      grid-column: span 4;
+    }
+
+    .card.full {
+      grid-column: 1 / -1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 330px;
+    }
+
+    .chart-wrap.short {
+      height: 290px;
+    }
+
+    .table-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      max-height: 620px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1300px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 12px 13px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      border: 1px solid transparent;
+    }
+
+    .pill.completed {
+      color: #047857;
+      background: rgba(5, 150, 105, 0.10);
+      border-color: rgba(5, 150, 105, 0.16);
+    }
+
+    .pill.bidding {
+      color: #1d4ed8;
+      background: rgba(37, 99, 235, 0.10);
+      border-color: rgba(37, 99, 235, 0.16);
+    }
+
+    .pill.on-hold {
+      color: #b45309;
+      background: rgba(217, 119, 6, 0.11);
+      border-color: rgba(217, 119, 6, 0.18);
+    }
+
+    .pill.default {
+      color: #475569;
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+    }
+
+    .error {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid rgba(220, 38, 38, 0.25);
+      background: rgba(220, 38, 38, 0.08);
+      color: #991b1b;
+      border-radius: 14px;
+      line-height: 1.5;
+    }
+
+    .loading {
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    @media (max-width: 1180px) {
+      .kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .card.wide,
+      .card.mid,
+      .card.narrow {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 22px, 1480px);
+        padding-top: 18px;
+      }
+
+      header {
+        flex-direction: column;
+      }
+
+      .toolbar {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .control {
+        flex: 1;
+        min-width: 100%;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-wrap,
+      .chart-wrap.short {
+        height: 300px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <section>
+        <div class="eyebrow">Live Google Sheet dashboard</div>
+        <h1>Project Portfolio Dashboard</h1>
+        <p class="subtitle">
+          A live view of project status, costs, services, geography, schedule variance, satisfaction, and the full source table.
+        </p>
+      </section>
+      <section class="toolbar" aria-label="Dashboard filters">
+        <select id="statusFilter" class="control">
+          <option value="All">All statuses</option>
+        </select>
+        <select id="typeFilter" class="control">
+          <option value="All">All project types</option>
+        </select>
+        <select id="countyFilter" class="control">
+          <option value="All">All counties</option>
+        </select>
+      </section>
+    </header>
+
+    <div id="error" class="error"></div>
+
+    <div class="status-bar">
+      <span id="dataStatus"><strong>Loading</strong> live data from Google Sheets...</span>
+      <span id="lastUpdated"></span>
+    </div>
+
+    <section class="kpis" aria-label="Key performance indicators">
+      <article class="kpi">
+        <div class="label">Projects</div>
+        <div class="value" id="kpiProjects">...</div>
+        <div class="note" id="kpiProjectsNote">Total records</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Estimated Cost</div>
+        <div class="value" id="kpiEstimated">...</div>
+        <div class="note">Sum of estimated_cost</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Actual Cost</div>
+        <div class="value" id="kpiActual">...</div>
+        <div class="note">Sum of actual_cost where available</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Fees</div>
+        <div class="value" id="kpiFee">...</div>
+        <div class="note">Sum of fee</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Avg Schedule Variance</div>
+        <div class="value" id="kpiVariance">...</div>
+        <div class="note">Average schedule_variance_days</div>
+      </article>
+      <article class="kpi">
+        <div class="label">Avg Satisfaction</div>
+        <div class="value" id="kpiSatisfaction">...</div>
+        <div class="note">Average satisfaction score</div>
+      </article>
+    </section>
+
+    <section id="loading" class="loading">Loading dashboard...</section>
+
+    <section id="dashboard" style="display: none;">
+      <section class="grid">
+        <article class="card wide">
+          <div class="card-header">
+            <div>
+              <h2>Cost by Project Type</h2>
+              <p>Estimated cost compared with actual cost, grouped by project_type.</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="costBarChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card narrow">
+          <div class="card-header">
+            <div>
+              <h2>Status Mix</h2>
+              <p>Project distribution by status.</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="statusDoughnutChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card mid">
+          <div class="card-header">
+            <div>
+              <h2>Project Starts Over Time</h2>
+              <p>Monthly count of projects by start_date.</p>
+            </div>
+          </div>
+          <div class="chart-wrap short">
+            <canvas id="startsLineChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card mid">
+          <div class="card-header">
+            <div>
+              <h2>Scale vs. Fee</h2>
+              <p>Scatter plot of square_feet against fee, colored by status.</p>
+            </div>
+          </div>
+          <div class="chart-wrap short">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card mid">
+          <div class="card-header">
+            <div>
+              <h2>Fees by Service</h2>
+              <p>Total fee grouped by service.</p>
+            </div>
+          </div>
+          <div class="chart-wrap short">
+            <canvas id="serviceFeeChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card mid">
+          <div class="card-header">
+            <div>
+              <h2>Average Satisfaction by County</h2>
+              <p>Average satisfaction score grouped by county.</p>
+            </div>
+          </div>
+          <div class="chart-wrap short">
+            <canvas id="countySatisfactionChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card full">
+          <div class="card-header">
+            <div>
+              <h2>Project Data Table</h2>
+              <p>All mapped source fields from the sheet, searchable and sortable.</p>
+            </div>
+          </div>
+          <div class="table-tools">
+            <input id="tableSearch" class="control search" type="search" placeholder="Search projects, clients, cities, services..." />
+            <span id="tableCount" class="subtitle"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead id="tableHead"></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const SHEET_ID = "1PoThUiE_E812_a3M6nYs8H3LCutIiL9WsICSVaam_LU";
+
+    const FIELD_MAP = {
+      project_id: "project_id",
+      project_name: "project_name",
+      client: "client",
+      project_type: "project_type",
+      county: "county",
+      city: "city",
+      service: "service",
+      status: "status",
+      start_date: "start_date",
+      completion_date: "completion_date",
+      square_feet: "square_feet",
+      estimated_cost: "estimated_cost",
+      actual_cost: "actual_cost",
+      fee: "fee",
+      schedule_variance_days: "schedule_variance_days",
+      satisfaction: "satisfaction"
+    };
+
+    const REQUIRED_COLUMNS = Object.values(FIELD_MAP);
+
+    const state = {
+      rawRows: [],
+      filteredRows: [],
+      sortKey: FIELD_MAP.start_date,
+      sortDirection: "desc",
+      charts: {}
+    };
+
+    const currencyFormatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    });
+
+    const numberFormatter = new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 0
+    });
+
+    const decimalFormatter = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+
+    const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      notation: "compact",
+      maximumFractionDigits: 1
+    });
+
+    const COLORS = [
+      "#2563eb",
+      "#059669",
+      "#d97706",
+      "#dc2626",
+      "#7c3aed",
+      "#0891b2",
+      "#db2777",
+      "#65a30d",
+      "#9333ea",
+      "#ea580c",
+      "#0f766e",
+      "#475569"
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadDashboard();
+      document.getElementById("statusFilter").addEventListener("change", updateDashboard);
+      document.getElementById("typeFilter").addEventListener("change", updateDashboard);
+      document.getElementById("countyFilter").addEventListener("change", updateDashboard);
+      document.getElementById("tableSearch").addEventListener("input", renderTable);
+    });
+
+    async function loadDashboard() {
+      try {
+        const rows = await fetchSheetRows();
+        state.rawRows = normalizeRows(rows);
+        validateColumns(state.rawRows);
+        populateFilters(state.rawRows);
+        updateDashboard();
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("dataStatus").innerHTML = `<strong>${state.rawRows.length}</strong> rows loaded from the live Google Sheet`;
+        document.getElementById("lastUpdated").textContent = `Last refreshed: ${new Date().toLocaleString()}`;
+      } catch (error) {
+        showError(error);
+      }
+    }
+
+    async function fetchSheetRows() {
+      const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:json`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Google Sheets request failed with status ${response.status}. Make sure the sheet is shared so anyone with the link can view it.`);
+      }
+
+      const text = await response.text();
+      const jsonText = extractGvizJson(text);
+      const payload = JSON.parse(jsonText);
+
+      if (payload.status === "error") {
+        const detail = payload.errors?.map(error => error.detailed_message || error.message).join(" ");
+        throw new Error(detail || "Google Sheets returned an error.");
+      }
+
+      const table = payload.table;
+      if (!table || !Array.isArray(table.cols) || !Array.isArray(table.rows)) {
+        throw new Error("The Google Sheets response did not include a valid table.");
+      }
+
+      const columns = table.cols.map((column, index) => {
+        const label = String(column.label || column.id || `Column ${index + 1}`).trim();
+        return label;
+      });
+
+      return table.rows.map(row => {
+        const record = {};
+        columns.forEach((columnName, index) => {
+          const cell = row.c?.[index];
+          record[columnName] = parseCellValue(cell);
+        });
+        return record;
+      });
+    }
+
+    function extractGvizJson(text) {
+      const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?$/);
+      if (!match) {
+        throw new Error("Unable to parse the Google Visualization response.");
+      }
+      return match[1];
+    }
+
+    function parseCellValue(cell) {
+      if (!cell) return null;
+      const value = cell.v;
+
+      if (typeof value === "string") {
+        const dateValue = parseGoogleDate(value);
+        return dateValue || value;
+      }
+
+      return value ?? null;
+    }
+
+    function parseGoogleDate(value) {
+      const match = String(value).match(/^Date\((\d{4}),(\d{1,2}),(\d{1,2})(?:,(\d{1,2}),(\d{1,2}),(\d{1,2}))?\)$/);
+      if (!match) return null;
+
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const hour = Number(match[4] || 0);
+      const minute = Number(match[5] || 0);
+      const second = Number(match[6] || 0);
+
+      return new Date(year, month, day, hour, minute, second);
+    }
+
+    function normalizeRows(rows) {
+      return rows
+        .filter(row => row && Object.values(row).some(value => value !== null && value !== ""))
+        .map(row => {
+          const normalized = {};
+          REQUIRED_COLUMNS.forEach(column => {
+            normalized[column] = row[column] ?? null;
+          });
+
+          normalized[FIELD_MAP.start_date] = parseDateValue(normalized[FIELD_MAP.start_date]);
+          normalized[FIELD_MAP.completion_date] = parseDateValue(normalized[FIELD_MAP.completion_date]);
+          normalized[FIELD_MAP.square_feet] = toNumber(normalized[FIELD_MAP.square_feet]);
+          normalized[FIELD_MAP.estimated_cost] = toNumber(normalized[FIELD_MAP.estimated_cost]);
+          normalized[FIELD_MAP.actual_cost] = toNumber(normalized[FIELD_MAP.actual_cost]);
+          normalized[FIELD_MAP.fee] = toNumber(normalized[FIELD_MAP.fee]);
+          normalized[FIELD_MAP.schedule_variance_days] = toNumber(normalized[FIELD_MAP.schedule_variance_days]);
+          normalized[FIELD_MAP.satisfaction] = toNumber(normalized[FIELD_MAP.satisfaction]);
+
+          return normalized;
+        });
+    }
+
+    function validateColumns(rows) {
+      if (!rows.length) {
+        throw new Error("No rows were found in the sheet.");
+      }
+
+      const missing = REQUIRED_COLUMNS.filter(column => !(column in rows[0]));
+      if (missing.length) {
+        throw new Error(`Missing expected column(s): ${missing.join(", ")}.`);
+      }
+    }
+
+    function parseDateValue(value) {
+      if (value instanceof Date) return value;
+      if (value === null || value === undefined || value === "") return null;
+
+      const googleDate = parseGoogleDate(value);
+      if (googleDate) return googleDate;
+
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function toNumber(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const number = Number(String(value).replace(/[$,%\s,]/g, ""));
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function populateFilters(rows) {
+      populateSelect("statusFilter", uniqueValues(rows, FIELD_MAP.status), "All statuses");
+      populateSelect("typeFilter", uniqueValues(rows, FIELD_MAP.project_type), "All project types");
+      populateSelect("countyFilter", uniqueValues(rows, FIELD_MAP.county), "All counties");
+    }
+
+    function populateSelect(id, values, allLabel) {
+      const select = document.getElementById(id);
+      select.innerHTML = `<option value="All">${allLabel}</option>`;
+      values.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
+
+    function uniqueValues(rows, key) {
+      return [...new Set(rows.map(row => row[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+    }
+
+    function updateDashboard() {
+      const status = document.getElementById("statusFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const county = document.getElementById("countyFilter").value;
+
+      state.filteredRows = state.rawRows.filter(row => {
+        return (status === "All" || row[FIELD_MAP.status] === status)
+          && (type === "All" || row[FIELD_MAP.project_type] === type)
+          && (county === "All" || row[FIELD_MAP.county] === county);
+      });
+
+      renderKpis(state.filteredRows);
+      renderCharts(state.filteredRows);
+      renderTable();
+    }
+
+    function renderKpis(rows) {
+      const projects = rows.length;
+      const completed = rows.filter(row => String(row[FIELD_MAP.status]).toLowerCase() === "completed").length;
+      const estimatedCost = sum(rows, FIELD_MAP.estimated_cost);
+      const actualCost = sum(rows, FIELD_MAP.actual_cost);
+      const fee = sum(rows, FIELD_MAP.fee);
+      const avgVariance = average(rows, FIELD_MAP.schedule_variance_days);
+      const avgSatisfaction = average(rows, FIELD_MAP.satisfaction);
+
+      document.getElementById("kpiProjects").textContent = numberFormatter.format(projects);
+      document.getElementById("kpiProjectsNote").textContent = `${numberFormatter.format(completed)} completed`;
+      document.getElementById("kpiEstimated").textContent = compactCurrencyFormatter.format(estimatedCost);
+      document.getElementById("kpiActual").textContent = compactCurrencyFormatter.format(actualCost);
+      document.getElementById("kpiFee").textContent = compactCurrencyFormatter.format(fee);
+      document.getElementById("kpiVariance").textContent = `${decimalFormatter.format(avgVariance || 0)} days`;
+      document.getElementById("kpiSatisfaction").textContent = avgSatisfaction === null ? "N/A" : decimalFormatter.format(avgSatisfaction);
+    }
+
+    function renderCharts(rows) {
+      renderCostBarChart(rows);
+      renderStatusDoughnutChart(rows);
+      renderStartsLineChart(rows);
+      renderScatterChart(rows);
+      renderServiceFeeChart(rows);
+      renderCountySatisfactionChart(rows);
+    }
+
+    function renderCostBarChart(rows) {
+      const grouped = groupBy(rows, FIELD_MAP.project_type);
+      const labels = Object.keys(grouped).sort();
+      const estimated = labels.map(label => sum(grouped[label], FIELD_MAP.estimated_cost));
+      const actual = labels.map(label => sum(grouped[label], FIELD_MAP.actual_cost));
+
+      createOrUpdateChart("costBarChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Estimated Cost",
+              data: estimated,
+              backgroundColor: COLORS[0],
+              borderRadius: 9
+            },
+            {
+              label: "Actual Cost",
+              data: actual,
+              backgroundColor: COLORS[1],
+              borderRadius: 9
+            }
+          ]
+        },
+        options: baseChartOptions({
+          yTickFormatter: value => compactCurrencyFormatter.format(value),
+          tooltipFormatter: context => currencyFormatter.format(context.parsed.y || 0)
+        })
+      });
+    }
+
+    function renderStatusDoughnutChart(rows) {
+      const counts = countBy(rows, FIELD_MAP.status);
+      const labels = Object.keys(counts).sort();
+
+      createOrUpdateChart("statusDoughnutChart", {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: labels.map(label => counts[label]),
+              backgroundColor: labels.map((_, index) => COLORS[index % COLORS.length]),
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                usePointStyle: true,
+                boxWidth: 8,
+                padding: 16,
+                color: "#475569"
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: context => `${context.label}: ${numberFormatter.format(context.parsed)} projects`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderStartsLineChart(rows) {
+      const buckets = {};
+      rows.forEach(row => {
+        const date = row[FIELD_MAP.start_date];
+        if (!date) return;
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        buckets[key] = (buckets[key] || 0) + 1;
+      });
+
+      const labels = Object.keys(buckets).sort();
+
+      createOrUpdateChart("startsLineChart", {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Project Starts",
+              data: labels.map(label => buckets[label]),
+              borderColor: COLORS[0],
+              backgroundColor: "rgba(37, 99, 235, 0.12)",
+              pointBackgroundColor: COLORS[0],
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.35
+            }
+          ]
+        },
+        options: baseChartOptions({
+          yTickFormatter: value => numberFormatter.format(value),
+          tooltipFormatter: context => `${numberFormatter.format(context.parsed.y || 0)} projects`
+        })
+      });
+    }
+
+    function renderScatterChart(rows) {
+      const statuses = uniqueValues(rows, FIELD_MAP.status);
+      const datasets = statuses.map((status, index) => {
+        const matchingRows = rows.filter(row => row[FIELD_MAP.status] === status);
+        return {
+          label: status,
+          data: matchingRows
+            .filter(row => row[FIELD_MAP.square_feet] !== null && row[FIELD_MAP.fee] !== null)
+            .map(row => ({
+              x: row[FIELD_MAP.square_feet],
+              y: row[FIELD_MAP.fee],
+              project: row[FIELD_MAP.project_name],
+              city: row[FIELD_MAP.city]
+            })),
+          backgroundColor: COLORS[index % COLORS.length],
+          borderColor: COLORS[index % COLORS.length],
+          pointRadius: 6,
+          pointHoverRadius: 8
+        };
+      });
+
+      createOrUpdateChart("scatterChart", {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "square_feet",
+                color: "#64748b"
+              },
+              ticks: {
+                color: "#64748b",
+                callback: value => numberFormatter.format(value)
+              },
+              grid: {
+                color: "rgba(148, 163, 184, 0.18)"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "fee",
+                color: "#64748b"
+              },
+              ticks: {
+                color: "#64748b",
+                callback: value => compactCurrencyFormatter.format(value)
+              },
+              grid: {
+                color: "rgba(148, 163, 184, 0.18)"
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                usePointStyle: true,
+                boxWidth: 8,
+                color: "#475569"
+              }
+            },
+            tooltip: {
+              callbacks: {
+                title: items => items[0]?.raw?.project || "",
+                label: context => [
+                  `Status: ${context.dataset.label}`,
+                  `City: ${context.raw.city || "N/A"}`,
+                  `Square Feet: ${numberFormatter.format(context.parsed.x || 0)}`,
+                  `Fee: ${currencyFormatter.format(context.parsed.y || 0)}`
+                ]
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderServiceFeeChart(rows) {
+      const grouped = groupBy(rows, FIELD_MAP.service);
+      const labels = Object.keys(grouped)
+        .sort((a, b) => sum(grouped[b], FIELD_MAP.fee) - sum(grouped[a], FIELD_MAP.fee))
+        .slice(0, 10);
+
+      createOrUpdateChart("serviceFeeChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Fee",
+              data: labels.map(label => sum(grouped[label], FIELD_MAP.fee)),
+              backgroundColor: labels.map((_, index) => COLORS[index % COLORS.length]),
+              borderRadius: 9
+            }
+          ]
+        },
+        options: baseChartOptions({
+          indexAxis: "y",
+          yTickFormatter: value => value,
+          xTickFormatter: value => compactCurrencyFormatter.format(value),
+          tooltipFormatter: context => currencyFormatter.format(context.parsed.x || 0)
+        })
+      });
+    }
+
+    function renderCountySatisfactionChart(rows) {
+      const grouped = groupBy(rows, FIELD_MAP.county);
+      const labels = Object.keys(grouped).sort();
+
+      createOrUpdateChart("countySatisfactionChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Average Satisfaction",
+              data: labels.map(label => average(grouped[label], FIELD_MAP.satisfaction)),
+              backgroundColor: COLORS[4],
+              borderRadius: 9
+            }
+          ]
+        },
+        options: baseChartOptions({
+          suggestedMin: 0,
+          suggestedMax: 5,
+          yTickFormatter: value => decimalFormatter.format(value),
+          tooltipFormatter: context => decimalFormatter.format(context.parsed.y || 0)
+        })
+      });
+    }
+
+    function baseChartOptions({
+      indexAxis = "x",
+      yTickFormatter = value => value,
+      xTickFormatter = value => value,
+      tooltipFormatter = context => context.formattedValue,
+      suggestedMin,
+      suggestedMax
+    } = {}) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis,
+        scales: {
+          x: {
+            suggestedMin: indexAxis === "y" ? suggestedMin : undefined,
+            suggestedMax: indexAxis === "y" ? suggestedMax : undefined,
+            ticks: {
+              color: "#64748b",
+              callback: xTickFormatter,
+              maxRotation: 0,
+              autoSkip: true
+            },
+            grid: {
+              color: "rgba(148, 163, 184, 0.16)"
+            }
+          },
+          y: {
+            suggestedMin: indexAxis === "x" ? suggestedMin : undefined,
+            suggestedMax: indexAxis === "x" ? suggestedMax : undefined,
+            ticks: {
+              color: "#64748b",
+              callback: yTickFormatter
+            },
+            grid: {
+              color: "rgba(148, 163, 184, 0.18)"
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              usePointStyle: true,
+              boxWidth: 8,
+              color: "#475569"
+            }
+          },
+          tooltip: {
+            backgroundColor: "#0f172a",
+            padding: 12,
+            titleColor: "#ffffff",
+            bodyColor: "#e2e8f0",
+            callbacks: {
+              label: context => `${context.dataset.label}: ${tooltipFormatter(context)}`
+            }
+          }
+        }
+      };
+    }
+
+    function createOrUpdateChart(canvasId, config) {
+      const ctx = document.getElementById(canvasId);
+
+      if (state.charts[canvasId]) {
+        state.charts[canvasId].destroy();
+      }
+
+      state.charts[canvasId] = new Chart(ctx, config);
+    }
+
+    function renderTable() {
+      const searchTerm = document.getElementById("tableSearch").value.trim().toLowerCase();
+
+      let rows = state.filteredRows.filter(row => {
+        if (!searchTerm) return true;
+        return REQUIRED_COLUMNS.some(column => formatCell(row[column], column).toLowerCase().includes(searchTerm));
+      });
+
+      rows = rows.sort((a, b) => compareValues(a[state.sortKey], b[state.sortKey]) * (state.sortDirection === "asc" ? 1 : -1));
+
+      const tableHead = document.getElementById("tableHead");
+      const tableBody = document.getElementById("tableBody");
+
+      tableHead.innerHTML = `
+        <tr>
+          ${REQUIRED_COLUMNS.map(column => {
+            const indicator = state.sortKey === column ? (state.sortDirection === "asc" ? " ▲" : " ▼") : "";
+            return `<th data-column="${escapeHtml(column)}">${escapeHtml(column)}${indicator}</th>`;
+          }).join("")}
+        </tr>
+      `;
+
+      tableHead.querySelectorAll("th").forEach(header => {
+        header.addEventListener("click", () => {
+          const column = header.dataset.column;
+          if (state.sortKey === column) {
+            state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+          } else {
+            state.sortKey = column;
+            state.sortDirection = "asc";
+          }
+          renderTable();
+        });
+      });
+
+      tableBody.innerHTML = rows.map(row => `
+        <tr>
+          ${REQUIRED_COLUMNS.map(column => `<td>${renderCell(row[column], column)}</td>`).join("")}
+        </tr>
+      `).join("");
+
+      document.getElementById("tableCount").textContent = `${numberFormatter.format(rows.length)} of ${numberFormatter.format(state.filteredRows.length)} visible rows`;
+    }
+
+    function renderCell(value, column) {
+      if (column === FIELD_MAP.status) {
+        const status = String(value || "Unknown");
+        const className = status.toLowerCase().replace(/\s+/g, "-");
+        return `<span class="pill ${escapeHtml(className || "default")}">${escapeHtml(status)}</span>`;
+      }
+
+      return escapeHtml(formatCell(value, column));
+    }
+
+    function formatCell(value, column) {
+      if (value === null || value === undefined || value === "") return "";
+
+      if (column === FIELD_MAP.start_date || column === FIELD_MAP.completion_date) {
+        return value instanceof Date && !Number.isNaN(value.getTime()) ? value.toLocaleDateString() : String(value);
+      }
+
+      if ([FIELD_MAP.estimated_cost, FIELD_MAP.actual_cost, FIELD_MAP.fee].includes(column)) {
+        return value === null ? "" : currencyFormatter.format(value);
+      }
+
+      if (column === FIELD_MAP.square_feet) {
+        return value === null ? "" : numberFormatter.format(value);
+      }
+
+      if ([FIELD_MAP.schedule_variance_days, FIELD_MAP.satisfaction].includes(column)) {
+        return value === null ? "" : decimalFormatter.format(value);
+      }
+
+      return String(value);
+    }
+
+    function compareValues(a, b) {
+      const emptyA = a === null || a === undefined || a === "";
+      const emptyB = b === null || b === undefined || b === "";
+
+      if (emptyA && emptyB) return 0;
+      if (emptyA) return 1;
+      if (emptyB) return -1;
+
+      if (a instanceof Date && b instanceof Date) {
+        return a.getTime() - b.getTime();
+      }
+
+      if (typeof a === "number" && typeof b === "number") {
+        return a - b;
+      }
+
+      return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    function groupBy(rows, key) {
+      return rows.reduce((groups, row) => {
+        const label = row[key] || "Unknown";
+        groups[label] = groups[label] || [];
+        groups[label].push(row);
+        return groups;
+      }, {});
+    }
+
+    function countBy(rows, key) {
+      return rows.reduce((counts, row) => {
+        const label = row[key] || "Unknown";
+        counts[label] = (counts[label] || 0) + 1;
+        return counts;
+      }, {});
+    }
+
+    function sum(rows, key) {
+      return rows.reduce((total, row) => total + (Number.isFinite(row[key]) ? row[key] : 0), 0);
+    }
+
+    function average(rows, key) {
+      const values = rows.map(row => row[key]).filter(value => Number.isFinite(value));
+      if (!values.length) return null;
+      return values.reduce((total, value) => total + value, 0) / values.length;
+    }
+
+    function showError(error) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("dataStatus").innerHTML = "<strong>Unable to load data</strong>";
+      document.getElementById("lastUpdated").textContent = "";
+      const errorBox = document.getElementById("error");
+      errorBox.style.display = "block";
+      errorBox.textContent = error.message || "An unknown error occurred while loading the Google Sheet.";
+      console.error(error);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
